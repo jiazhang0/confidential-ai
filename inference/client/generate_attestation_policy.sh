@@ -2,8 +2,12 @@
 if [[ "$1" == "--hostdata" ]]; then
   echo Computing CCE policy...
   export MODEL_SIGNING_KEY=`cat ../models/signing_public.pem | base64 -w0`
-  envsubst < ../policy/policy-in-template.json > /tmp/policy-in.json
-  CCE_POLICY=$(az confcom acipolicygen -i /tmp/policy-in.json)
+
+  if [ ! -s /tmp/cce-policy.b64 ]; then
+    envsubst < ../policy/policy-in-template.json > /tmp/policy-in.json
+    az confcom acipolicygen -i /tmp/policy-in.json > /tmp/cce-policy.b64
+  fi
+  CCE_POLICY=$(cat /tmp/cce-policy.b64)
 
   TOOLS_HOME=${PWD}/../external/confidential-sidecar-containers/tools
 

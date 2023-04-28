@@ -14,8 +14,12 @@ TOOLS_HOME=${PWD}/../external/confidential-sidecar-containers/tools
 
 # Generate container security policy to be bound to the key
 export MODEL_SIGNING_KEY=`cat signing_public.pem | base64 -w0`
-envsubst < ../policy/policy-in-template.json > /tmp/policy-in.json
-export CCE_POLICY=$(az confcom acipolicygen -i /tmp/policy-in.json)
+
+if [ ! -s /tmp/cce-policy.b64 ]; then
+    envsubst < ../policy/policy-in-template.json > /tmp/policy-in.json
+    az confcom acipolicygen -i /tmp/policy-in.json > /tmp/cce-policy.b64
+fi
+export CCE_POLICY=$(cat /tmp/cce-policy.b64)
 
 echo "Generating container security policy..."
 pushd .

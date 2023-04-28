@@ -11,8 +11,11 @@ done
 
 TOOLS_HOME=${PWD}/../external/confidential-sidecar-containers/tools
 
-envsubst < ../policy/policy-in-template.json > /tmp/policy-in.json
-export CCE_POLICY=$(az confcom acipolicygen -i /tmp/policy-in.json)
+if [ ! -s /tmp/cce-policy.b64 ]; then
+    envsubst < ../policy/policy-in-template.json > /tmp/policy-in.json
+    az confcom acipolicygen -i /tmp/policy-in.json > /tmp/cce-policy.b64
+fi
+export CCE_POLICY=$(cat /tmp/cce-policy.b64)
 
 pushd .
 cd $TOOLS_HOME/securitypolicydigest

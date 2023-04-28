@@ -5,9 +5,12 @@
 
 export MODEL_SIGNING_KEY=`cat ../../models/signing_public.pem | base64 -w0`
 
-echo Computing CCE policy...
-envsubst < ../../policy/policy-in-template.json > /tmp/policy-in.json
-export CCE_POLICY=$(az confcom acipolicygen -i /tmp/policy-in.json)
+if [ ! -s /tmp/cce-policy.b64 ]; then
+    echo Computing CCE policy...
+    envsubst < ../../policy/policy-in-template.json > /tmp/policy-in.json
+    az confcom acipolicygen -i /tmp/policy-in.json > /tmp/cce-policy.b64
+fi
+export CCE_POLICY=$(cat /tmp/cce-policy.b64)
 
 echo Generating encrypted file system information...
 export ENCRYPTED_FILESYSTEM_INFORMATION=`./generate-encrypted-filesystem-info.sh --sas | base64 --wrap=0`
