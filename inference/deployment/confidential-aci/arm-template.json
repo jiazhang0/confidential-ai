@@ -118,7 +118,7 @@
           "isolationType": "SevSnp",
           "ccePolicy": "[parameters('ccePolicy')]"
         },
-        "initContainers": [
+        "containers": [
           {
             "name": "inference-init",
             "properties": {
@@ -126,11 +126,18 @@
               "command": [
                 "/bin/sh",
                 "setup-iptables.sh"
-              ]
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": 0.1,
+                  "memoryInGB": 0.2
+                }
+              },
+              "securityContext": {
+                "privileged": true
+              }
             }
-          }
-        ],
-        "containers": [
+          },
           {
             "name": "inference-server",
             "properties": {

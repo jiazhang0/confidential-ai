@@ -66,3 +66,6 @@ fi
 
 # Redirect all other TCP traffic to the Envoy prxoy.
 iptables -t nat -A PROXY_INBOUND -p tcp -j PROXY_IN_REDIRECT
+
+# Wait forever
+while true; do sleep 100; done
