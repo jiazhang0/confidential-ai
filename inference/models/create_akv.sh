@@ -12,8 +12,8 @@ if [[ "$AZURE_AKV_RESOURCE_ENDPOINT" == *".vault.azure.net" ]]; then
     az keyvault create --name $AZURE_AKV_RESOURCE_NAME --resource-group $AZURE_RESOURCE_GROUP --sku "Premium" --enable-rbac-authorization
     # Assign RBAC roles to the resource owner so they can import keys
     AKV_SCOPE=`az keyvault show --name $AZURE_AKV_RESOURCE_NAME --query id --output tsv`    
-    az role assignment create --role "Key Vault Crypto Officer" --assignee `az account show --query user.name --output tsv` --scope $AKV_SCOPE
-    az role assignment create --role "Key Vault Crypto User" --assignee `az account show --query user.name --output tsv` --scope $AKV_SCOPE
+    az role assignment create --role "Key Vault Crypto Officer" --assignee `az ad user list --query [0].id -o tsv` --scope $AKV_SCOPE
+    az role assignment create --role "Key Vault Crypto User" --assignee `az ad user list --query [0].id -o tsv` --scope $AKV_SCOPE
 else
     echo "Automated creation of key vaults is supported only for vaults"
 fi
