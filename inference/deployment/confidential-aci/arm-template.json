@@ -194,7 +194,7 @@
               "resources": {
                 "requests": {
                   "cpu": 0.4,
-                  "memoryInGB": 2
+                  "memoryInGB": 1.8
                 }
               },
               "securityContext": {
@@ -249,7 +249,7 @@
               ],
               "resources": {
                 "requests": {
-                  "cpu": 0.4,
+                  "cpu": 0.3,
                   "memoryInGB": 1.5
                 }
               }
