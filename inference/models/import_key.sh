@@ -40,17 +40,21 @@ if [[ "$AZURE_AKV_RESOURCE_ENDPOINT" == *".vault.azure.net" ]]; then
     export BEARER_TOKEN=$(az account get-access-token --resource https://vault.azure.net | jq -r .accessToken)
     echo "Importing keys to AKV key vaults can be only of type RSA-HSM"
     export AZURE_AKV_KEY_TYPE="RSA-HSM"
+    vaultType="vault"
 elif [[ "$AZURE_AKV_RESOURCE_ENDPOINT" == *".managedhsm.azure.net" ]]; then
     export BEARER_TOKEN=$(az account get-access-token --resource https://managedhsm.azure.net | jq -r .accessToken)    
+    vaultType="mhsm"
 fi
 
 # For RSA-HSM keys, we need to set a salt and label which will be used in the symmetric key derivation
 if [ "$AZURE_AKV_KEY_TYPE" = "RSA-HSM" ]; then    
-    if [[ -z "$salt" ]]; then
+    if [[ -z "$salt" && ! -s "salt_modelkey.bin" ]]; then
         dd if=/dev/random of="salt_modelkey.bin" count=1 bs=32
         export AZURE_AKV_KEY_DERIVATION_SALT=$(python hexstring.py salt_modelkey.bin | sed "s/'//g" | sed "1s/^.//") 
-    else
+    elif [[ -n "$salt" ]]; then
         export AZURE_AKV_KEY_DERIVATION_SALT=$salt
+    else
+	export AZURE_AKV_KEY_DERIVATION_SALT=$(python hexstring.py salt_modelkey.bin | sed "s/'//g" | sed "1s/^.//")
     fi
 
     export AZURE_AKV_KEY_DERIVATION_LABEL="Model Encryption Key"
@@ -73,9 +77,14 @@ echo $CONFIG > /tmp/importkey-config.json
 
 # Import key into key vault
 echo "Importing model key..."
+model_key="$PWD/rsa_material_modelkey.pem"
 pushd .
 cd $TOOLS_HOME/importkey
-go run main.go -c /tmp/importkey-config.json -out
+if [[ -s "$model_key" ]]; then
+  go run main.go -c /tmp/importkey-config.json -kp $model_key -out
+else
+  go run main.go -c /tmp/importkey-config.json -out
+fi
 popd
 mv $TOOLS_HOME/importkey/keyfile.bin modelkey.bin
 if [[ "$vaultType" = "vault" ]]; then
